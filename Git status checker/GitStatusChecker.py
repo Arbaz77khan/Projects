@@ -39,8 +39,11 @@ def check_git_status(master_folder, output_file="git_status_log.xlsx"):
     except FileNotFoundError:
         updated_data = new_data
     
+    
+    print(f"Saving file at: {os.path.abspath(output_file)}")
     updated_data.to_excel(output_file, index=False)
     print(f"Check complete. Results saved in {output_file}")
 
-# Replace 'path_to_master_folder' with your actual master folder path
-check_git_status(r"D:\Master_Folder\Data Science Course")
+output_file = r"D:\Master_Folder\Data Science Course\Projects\Git status checker\git_status_log.xlsx"
+check_git_status(r"D:\Master_Folder\Data Science Course", output_file)
+
