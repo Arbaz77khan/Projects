@@ -1,0 +1,15 @@
+# Ignore Jupyter notebook checkpoints
+**/.ipynb_checkpoints/
+
+# Ignore VS Code virtual documents
+**/.virtual_documents/
+**/.vscode/
+
+# Ignore temporary Python files
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Ignore environment folders
+**/venv/
+**/.env/
