@@ -13,7 +13,7 @@ st.title('Stock Trend Prediction')
 # Load model
 @st.cache_resource
 def load_model():
-    return joblib.load('D:/Master_Folder/Data Science Course/Projects/StockTrendPredictor/models/price_multioutput_regressor.pkl')
+    return joblib.load('StockTrendPredictor/models/price_multioutput_regressor.pkl')
 
 model = load_model()
 
