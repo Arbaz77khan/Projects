@@ -1,86 +1,118 @@
 # Import libraries
-import streamlit as st
-import pandas as pd
-import numpy as np
+from datetime import datetime
+from db_manager import connect_db, update_model_meta
+from dotenv import load_dotenv
+from io import BytesIO
+from pydrive2.auth import GoogleAuth
+from pydrive2.drive import GoogleDrive
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split
+from sklearn.multioutput import MultiOutputRegressor
+from data_processor import collect_data, engineer_features, create_targets
+from db_manager import (connect_db, create_core_table, check_stock_in_list, 
+    add_stock_to_list, fetch_symbols, create_table_name, create_processed_table, 
+    insert_processed_data, get_latest_date, delete_old_data, update_table, 
+    update_inference_result, fetch_inference_result, update_model_meta)
+from model_trainer import train_data, upload_model_object_to_drive
+from inference import generate_trend_action, run_inference
+from stock_data_updator import data_pipeline, daily_update
+import gdown
 import joblib
-from ta.trend import sma_indicator, ema_indicator, macd_diff
-from ta.momentum import rsi
+import logging
+import numpy as np
+import os
+import pandas as pd
+import psycopg2
+import random
+import re
+import ta
+import time
+import streamlit as st
+import tempfile
+import yfinance as yf
+import warnings
+warnings.filterwarnings('ignore')
 
-# App structure
-st.set_page_config(page_title='Stock Trend Forecaster', layout='centered')
-st.title('Stock Trend Prediction')
+# App configuration
+st.set_page_config(page_title='ProInvest', layout='centered')
 
-# Load model
-@st.cache_resource
-def load_model():
-    return joblib.load('StockTrendPredictor/models/price_multioutput_regressor.pkl')
+# Title Section
+st.title("ProInvest — Invest Like a Pro!")
+st.caption("Your stock assistant for optimizing investment strategies.")
 
-model = load_model()
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Input values
-st.subheader('Enter last 7 days closing pricces')
-default_prices = [176.35, 174.88, 175.92, 177.04, 179.32, 178.20, 180.11]
+# Params
+mode = st.query_params.get("mode", ["app"])[0]
 
-close_prices = []
+# Initialize Session State 
+if 'symbol' not in st.session_state:
+    st.session_state['symbol'] = ''
+if 'retry_count' not in st.session_state:
+    st.session_state['retry_count'] = 0
 
-for i in range(7):
-    price = st.number_input(f'Day {-6+i} Close:', value=default_prices[i], format='%.2f')
-    close_prices.append(price)
+# Main Mode
+if mode == "app":
+    st.markdown("### Search for your stock")
+    user_input = st.text_input("Drop a stock symbol (e.g., TSLA, INFY.NS)", value=st.session_state['symbol'])
 
-# Ensure we have 7 clean floats
-if len(close_prices) == 7 and all(isinstance(p, float) for p in close_prices):
-    df = pd.DataFrame({"Close": close_prices[::-1]})  # Reverse to most recent first
-    df["SMA_14"] = sma_indicator(df["Close"], window=14)
-    df["EMA_14"] = ema_indicator(df["Close"], window=14)
-    df["RSI_14"] = rsi(df["Close"], window=14)
-    df["MACD"] = macd_diff(df["Close"])
-    df = df[::-1].reset_index(drop=True)
+    if st.button("Smash it!"):
+        st.session_state['symbol'] = user_input.upper().strip()
+        st.session_state['retry_count'] = 0  # reset retry count
+        
+    symbol = st.session_state['symbol']
 
-    latest_row = df.iloc[-1]
-    features = {
-        "SMA_14": latest_row["SMA_14"],
-        "EMA_14": latest_row["EMA_14"],
-        "RSI_14": latest_row["RSI_14"],
-        "MACD": latest_row["MACD"],
-    }
+    if symbol:
+        conn = connect_db()
+        if conn is None:
+            st.error("Ah!!! Seems database is playing hide n seek! Try refreshing...")
+            st.stop()
 
-    for i in range(1, 8):
-        features[f"Close_lag_{i}"] = close_prices[-i]
+        st.spinner(f"Looking up `{symbol}`...")
 
-    X_input = pd.DataFrame([features])
+        if not check_stock_in_list(conn, symbol):
+            st.session_state['retry_count'] += 1
 
-    # -----------------------------------------
-    # Prediction
-    # -----------------------------------------
-    st.subheader("🔮 Prediction")
-    if st.button("Predict"):
-        predicted_prices = model.predict(X_input)[0]
-        weights = np.array([0.25, 0.20, 0.20, 0.15, 0.10, 0.05, 0.05])
-        weighted_avg = np.dot(predicted_prices, weights)
-        current_price = close_prices[-1]
+            if st.session_state['retry_count'] > 10:
+                st.error("Seems market is busy digging gold. Please try later!")
+                st.stop()
 
-        if weighted_avg > current_price * 1.015:
-            trend = "BUY 🟢"
-            color = "green"
-        elif weighted_avg < current_price * 0.985:
-            trend = "SELL 🔴"
-            color = "red"
+            with st.spinner(f"Checking the vaults for {symbol}..."):
+                try:
+                    data_pipeline(conn, symbol)
+                except Exception as e:
+                    error_message = str(e)
+
+                    if "429" in error_message or "Too Many Requests" in error_message:
+                        time.sleep(random.uniform(2, 4))
+                        logging.info(f"Waiting {wait_time:.2f} seconds before retrying...")
+                        st.rerun()
+                    else:
+                        logging.info(e)
+                        st.error("Server down! Please try later!")
+                        st.stop()
+
+        inference, trend = fetch_inference_result(conn, symbol)
+        if inference:
+            st.success("Here's your fresh stock prediction:")
+            st.dataframe(inference, use_container_width=True)
+            st.markdown(f"### Move Suggestion: **{trend}**")
         else:
-            trend = "HOLD ⚪"
-            color = "gray"
+            st.error("🚨 Weird! Data exists, but no predictions found.")
 
-        # Output Table
-        forecast_df = pd.DataFrame({
-            "Day": [f"Day {i+1}" for i in range(7)],
-            "Predicted Price": [f"${p:.2f}" for p in predicted_prices]
-        })
+        conn.close()
 
-        st.table(forecast_df)
-        st.markdown("---")
-        st.metric(label="📊 Weighted Avg. Predicted Price", value=f"${weighted_avg:.2f}")
-        st.metric(label="📌 Current Price", value=f"${current_price:.2f}")
-        st.markdown(f"### Final Recommendation: **:{color}[{trend}]**")
+# Scheduler Trigger (optional)
+elif mode == "update":
+    st.markdown("## Daily Update Trigger (Admin Mode)")
+    st.info("Initiating backend wizardry... might take a moment")
+    try:
+        daily_update()
+        st.success("Stocks updated! We’re fresh as morning chai")
+    except Exception as e:
+        st.error(f"Daily update failed: {str(e)}")
 
-# Footer
-st.markdown("---")
-st.markdown("Built by Arbaz Khan • GitHub: [@arbaz-ai](https://github.com/yourprofile)")
+else:
+    st.error("Mode unknown. Are you from the future?")

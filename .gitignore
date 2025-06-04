@@ -12,4 +12,8 @@
 
 # Ignore environment folders
 **/venv/
-**/.env/
+**/*.env
+
+# Ignore Json file
+StockTrendPredictor/app/*.json
+

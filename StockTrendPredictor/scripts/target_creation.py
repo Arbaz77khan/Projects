@@ -29,7 +29,7 @@ def generate_weekly_trend(row, threshold=0.015):
 df['Target_trend_7day_combined'] = df.apply(generate_weekly_trend, axis=1)
 
 # Drop rows with NaNs (from shift at end)
-df.dropna(inplace=True)
+# df.dropna(inplace=True)
 
 # Save processed file
 df.to_csv('D:/Master_Folder/Data Science Course/Projects/StockTrendPredictor/data/processed/tesla_final.csv', index=False)
