@@ -78,9 +78,9 @@ def upload_model_object_to_drive(symbol, model_object, upload_flag=True):
     # initial_creds = os.getenv("GDRIVE_CREDENTIALS_INITIAL")
     # final_creds = os.getenv("GDRIVE_CREDENTIALS_FINAL")
 
-    drive_folder_id = st.secrets('DRIVE_FOLDER_ID')
-    initial_creds = st.secrets("GDRIVE_CREDENTIALS_INITIAL")
-    final_creds = st.secrets("GDRIVE_CREDENTIALS_FINAL")
+    drive_folder_id = st.secrets['DRIVE_FOLDER_ID']
+    initial_creds = st.secrets["GDRIVE_CREDENTIALS_INITIAL"]
+    final_creds = st.secrets["GDRIVE_CREDENTIALS_FINAL"]
 
     if initial_creds:
         with open("gdrive_credentials_initial.json", "w") as f:
