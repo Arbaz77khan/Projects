@@ -16,7 +16,7 @@
 
 # Ignore Json file
 StockTrendPredictor/app/*.json
-
+*.env
 StockTrendPredictor/app/.env
 StockTrendPredictor/app/gdrive_credentials_final.json
 StockTrendPredictor/app/gdrive_credentials_initial.json

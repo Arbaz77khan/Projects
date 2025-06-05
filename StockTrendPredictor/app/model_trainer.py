@@ -75,6 +75,17 @@ def upload_model_object_to_drive(symbol, model_object, upload_flag=True):
     load_dotenv()
     drive_folder_id = os.getenv('DRIVE_FOLDER_ID')
 
+    initial_creds = os.getenv("GDRIVE_CREDENTIALS_INITIAL")
+    final_creds = os.getenv("GDRIVE_CREDENTIALS_FINAL")
+
+    if initial_creds:
+        with open("gdrive_credentials_initial.json", "w") as f:
+            f.write(initial_creds)
+
+    if final_creds:
+        with open("gdrive_credentials_final.json", "w") as f:
+            f.write(final_creds)
+
     # Create temp file and dump model directly
     with tempfile.NamedTemporaryFile(delete=False, suffix='.pkl') as tmp_file:
         temp_path = tmp_file.name
