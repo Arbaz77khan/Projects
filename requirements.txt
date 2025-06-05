@@ -165,3 +165,4 @@ Werkzeug==3.0.1
 widgetsnbextension==4.0.13
 yfinance==0.2.57
 zipp==3.21.0
+psycopg2-binary
