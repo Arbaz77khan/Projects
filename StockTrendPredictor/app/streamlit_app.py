@@ -86,7 +86,8 @@ if mode == "app":
                     error_message = str(e)
 
                     if "429" in error_message or "Too Many Requests" in error_message:
-                        time.sleep(random.uniform(2, 4))
+                        wait_time = random.uniform(2, 4)
+                        time.sleep(wait_time)
                         logging.info(f"Waiting {wait_time:.2f} seconds before retrying...")
                         st.rerun()
                     else:

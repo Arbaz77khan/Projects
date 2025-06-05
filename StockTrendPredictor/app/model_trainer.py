@@ -17,6 +17,7 @@ from db_manager import connect_db, update_model_meta, create_table_name, get_ent
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from inference import run_inference
+import streamlit as st
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -72,11 +73,14 @@ def upload_model_object_to_drive(symbol, model_object, upload_flag=True):
         return None
 
     
-    load_dotenv()
-    drive_folder_id = os.getenv('DRIVE_FOLDER_ID')
+    # load_dotenv()
+    # drive_folder_id = os.getenv('DRIVE_FOLDER_ID')
+    # initial_creds = os.getenv("GDRIVE_CREDENTIALS_INITIAL")
+    # final_creds = os.getenv("GDRIVE_CREDENTIALS_FINAL")
 
-    initial_creds = os.getenv("GDRIVE_CREDENTIALS_INITIAL")
-    final_creds = os.getenv("GDRIVE_CREDENTIALS_FINAL")
+    drive_folder_id = st.secrets('DRIVE_FOLDER_ID')
+    initial_creds = st.secrets("GDRIVE_CREDENTIALS_INITIAL")
+    final_creds = st.secrets("GDRIVE_CREDENTIALS_FINAL")
 
     if initial_creds:
         with open("gdrive_credentials_initial.json", "w") as f:

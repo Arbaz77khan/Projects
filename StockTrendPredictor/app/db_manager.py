@@ -5,6 +5,7 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 import re
+import streamlit as st
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -12,13 +13,18 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # Connect database
 def connect_db():
     try:
-        load_dotenv()
+        # load_dotenv()
         conn = psycopg2.connect(
-            host=os.getenv('DB_HOST'), 
-            port=os.getenv('DB_PORT'), 
-            database=os.getenv('DB_NAME'), 
-            user=os.getenv('DB_USER'), 
-            password=os.getenv('DB_PASSWORD')
+            # host=os.getenv('DB_HOST'), 
+            # port=os.getenv('DB_PORT'), 
+            # database=os.getenv('DB_NAME'), 
+            # user=os.getenv('DB_USER'), 
+            # password=os.getenv('DB_PASSWORD')
+            host=st.secrets('DB_HOST'), 
+            port=st.secrets('DB_PORT'), 
+            database=st.secrets('DB_NAME'), 
+            user=st.secrets('DB_USER'), 
+            password=st.secrets('DB_PASSWORD')
         )
         conn.autocommit = True
         logging.info("Database connected successfully!")
