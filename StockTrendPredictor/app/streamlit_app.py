@@ -45,7 +45,7 @@ st.caption("Your stock assistant for optimizing investment strategies.")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Params
-mode = st.query_params.get("mode", ["app"])[0]
+mode = st.experimental_get_query_params.get("mode", ["app"])[0]
 
 # Initialize Session State 
 if 'symbol' not in st.session_state:
