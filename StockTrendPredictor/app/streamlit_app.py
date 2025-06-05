@@ -110,7 +110,7 @@ elif mode == "update":
     st.markdown("## Daily Update Trigger (Admin Mode)")
     st.info("Initiating backend wizardry... might take a moment")
     try:
-        daily_update()
+        daily_update(conn)
         st.success("Stocks updated! We’re fresh as morning chai")
     except Exception as e:
         st.error(f"Daily update failed: {str(e)}")

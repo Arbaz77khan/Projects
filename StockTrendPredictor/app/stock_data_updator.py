@@ -108,7 +108,7 @@ def data_pipeline(conn, symbol, daily_update_flag = False):
                 raise
         logging.error(f"Pipeline error for {symbol}: {str(e)}")
 
-def daily_update():
+def daily_update(conn):
     daily_update_flag = True
 
     try:
@@ -152,7 +152,7 @@ if __name__ == '__main__':
             logging.error("DB coudn't connect. Refresh it!")
 
     if daily_update_trigger:
-        daily_update()
+        daily_update(conn)
         
 
     
