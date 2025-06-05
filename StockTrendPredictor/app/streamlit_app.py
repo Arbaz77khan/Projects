@@ -53,6 +53,11 @@ if 'symbol' not in st.session_state:
 if 'retry_count' not in st.session_state:
     st.session_state['retry_count'] = 0
 
+conn = connect_db()
+if conn is None:
+    st.error("Ah!!! Seems database is playing hide n seek! Try refreshing...")
+    st.stop()
+
 # Main Mode
 if mode == "app":
     st.markdown("### Search for your stock")
@@ -65,11 +70,6 @@ if mode == "app":
     symbol = st.session_state['symbol']
 
     if symbol:
-        conn = connect_db()
-        if conn is None:
-            st.error("Ah!!! Seems database is playing hide n seek! Try refreshing...")
-            st.stop()
-
         st.spinner(f"Looking up `{symbol}`...")
 
         if not check_stock_in_list(conn, symbol):
