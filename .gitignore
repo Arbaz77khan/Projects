@@ -20,5 +20,5 @@ StockTrendPredictor/app/*.json
 StockTrendPredictor/app/.env
 StockTrendPredictor/app/gdrive_credentials_final.json
 StockTrendPredictor/app/gdrive_credentials_initial.json
-
+StockTrendPredictor\app\.streamlit\secrets.toml
 
