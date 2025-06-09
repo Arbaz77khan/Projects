@@ -34,18 +34,32 @@ import yfinance as yf
 import warnings
 warnings.filterwarnings('ignore')
 
+# ------------------------------------------------
+
+# Project info
+if True:
+    project_name = 'stock trend predictor'
+    latest_version = 2.1
+    latest_version_description = 'bug - fixed mode logic;feature - added refresh button, exchange dropdown'
+    version_history = {
+        1.0: 'initial version - single stock trend predictor static webpage', 
+        2.0: 'multi-stock trend predictor with cloud DBMS & daily update function'
+    }
+
+# ------------------------------------------------
+
 # App configuration
 st.set_page_config(page_title='ProInvest', layout='centered')
 
 # Title Section
-st.title("ProInvest — Invest Like a Pro!")
+st.title("ProInvest — ahead of world!")
 st.caption("Your stock assistant for optimizing investment strategies.")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Params
-mode = st.experimental_get_query_params().get("mode", ["app"])[0]
+mode = int(st.query_params.get("mode", 0))
 
 # Initialize Session State 
 if 'symbol' not in st.session_state:
@@ -56,23 +70,101 @@ if 'retry_count' not in st.session_state:
 conn = connect_db()
 if conn is None:
     st.error("Ah!!! Seems database is playing hide n seek! Try refreshing...")
-    st.stop()
+    st.stop()      
+
+
+def streamlit_inference(inference, trend):
+    inference = pd.DataFrame.from_dict(inference, orient="index").reset_index()
+    column_names = ["Next", "Close"]
+    inference.columns = column_names
+
+    st.success("For the next 7 days, the stock price forcast is:")
+    st.dataframe(inference, use_container_width=True)
+
+    day1_price = inference.iloc[0]["Close"]  
+    day7_price = inference.iloc[-1]["Close"]
+    percentage_change = ((day7_price - day1_price) / day1_price) * 100
+
+    max_price = inference["Close"].max()
+    min_price = inference["Close"].min()
+    volatility = ((max_price - min_price) / min_price) * 100  # Price fluctuation measure
+
+    # Define analysis message with expanded insights
+    analysis_message = f"""
+        ### 📈 Stock Trend Analysis
+        - **Projected Price Change:** {abs(percentage_change):.2f}%
+        - **Price Range:** {min_price:.2f} (Lowest) ➝ {max_price:.2f} (Highest)
+        - **Market Volatility:** {volatility:.2f}% (Based on fluctuations in projected values)
+    """
+
+    if volatility > 5:
+        analysis_message += f"""
+            ⚠️ High volatility detected! Expect significant price swings.
+        """
+    elif volatility > 2:
+        analysis_message += f"""
+            📊 Moderate volatility detected—some market movements expected.
+        """
+    else:
+        analysis_message += f"""
+            ⚪ Low volatility—stock is relatively stable.
+        """
+
+    # Adjust recommendation based on percentage change
+    if percentage_change > 0:
+        analysis_message += f"""
+            🚀 **The stock price is projected to rise.**
+        """
+    elif percentage_change < 0:
+        analysis_message += f"""
+            🔻 **The stock price is projected to drop.**
+        """
+    else:
+        analysis_message += f"""
+            ⏳ **No significant change projected. Wait until next forcast!**
+        """
+
+    # Trend-based recommendations
+    if trend == 'BUY':
+        analysis_message += f"""
+        ✅ **Recommendation:** BUY now, as the trend suggests an upward movement.
+        """
+    elif trend == 'SELL':
+        analysis_message += f"""
+        🔴 **Recommendation:** SELL now, as prices may decline further.
+        """
+    else:
+        analysis_message += f"""
+        ⏳ **Recommendation:** HOLD or WAIT until market fluctuations provide a better opportunity.
+        """
+
+    # Display final analysis
+    st.markdown(analysis_message)
 
 # Main Mode
-if mode == "app":
+if mode == 0:
     st.markdown("### Search for your stock")
-    user_input = st.text_input("Drop a stock symbol (e.g., TSLA, INFY.NS)", value=st.session_state['symbol'])
+    user_input = st.text_input("Drop a stock symbol (e.g., TCS, INFY, TSLA)", value=st.session_state.get('symbol', ''))
+    exchange = st.selectbox("Select Exchange", ["NSE", "BSE", "USA"])
 
-    if st.button("Smash it!"):
-        st.session_state['symbol'] = user_input.upper().strip()
-        st.session_state['retry_count'] = 0  # reset retry count
-        
-    symbol = st.session_state['symbol']
+    if exchange == "NSE":
+        symbol = f"{user_input}.NS"
+    elif exchange == "BSE":
+        symbol = f"{user_input}.BO"
+    else:
+        symbol = f"{user_input}"
+    
+    if st.button("Smash it!") or st.session_state['retry_count'] > 0:
+        if not user_input.strip():
+            st.warning("Please enter a valid stock symbol before searching.")
+            st.stop()
 
-    if symbol:
+        st.session_state['symbol'] = symbol
+
         st.spinner(f"Looking up `{symbol}`...")
 
         if not check_stock_in_list(conn, symbol):
+
             st.session_state['retry_count'] += 1
 
             if st.session_state['retry_count'] > 10:
@@ -89,7 +181,12 @@ if mode == "app":
                         wait_time = random.uniform(2, 4)
                         time.sleep(wait_time)
                         logging.info(f"Waiting {wait_time:.2f} seconds before retrying...")
-                        st.rerun()
+                        
+                        if st.session_state['retry_count'] <= 10:
+                            st.rerun()  
+                        else:
+                            st.error("Retries exceeded. Please try again later!")
+                            st.stop()
                     else:
                         logging.info(e)
                         st.error("Server down! Please try later!")
@@ -97,23 +194,29 @@ if mode == "app":
 
         inference, trend = fetch_inference_result(conn, symbol)
         if inference:
-            st.success("Here's your fresh stock prediction:")
-            st.dataframe(inference, use_container_width=True)
-            st.markdown(f"### Move Suggestion: **{trend}**")
+            streamlit_inference(inference, trend)
         else:
             st.error("🚨 Weird! Data exists, but no predictions found.")
 
-        conn.close()
+    if st.button("Refresh!"):
+        st.session_state.pop("symbol", None) 
+        st.session_state['retry_count'] = 0  
+        st.rerun()
 
-# Scheduler Trigger (optional)
-elif mode == "update":
-    st.markdown("## Daily Update Trigger (Admin Mode)")
-    st.info("Initiating backend wizardry... might take a moment")
-    try:
-        daily_update(conn)
-        st.success("Stocks updated! We’re fresh as morning chai")
-    except Exception as e:
-        st.error(f"Daily update failed: {str(e)}")
+# Daily update (Admin mode)
+elif mode == 772001:
+    st.markdown("### Daily Update Trigger (Admin Mode)")
+    if st.button("Update!"):
+        with st.spinner("Initiating backend wizardry... might take a moment"):
+            try:
+                daily_update(conn)
+                st.success("Stocks updated! We’re fresh as morning chai")
+            except Exception as e:
+                st.error(f"Daily update failed: {str(e)}")
 
 else:
     st.error("Mode unknown. Are you from the future?")
+
+
+if conn:
+    conn.close()
