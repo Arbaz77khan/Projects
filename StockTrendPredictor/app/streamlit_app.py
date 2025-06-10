@@ -159,11 +159,15 @@ if mode == 0:
             st.warning("Please enter a valid stock symbol before searching.")
             st.stop()
 
+        symbol = symbol.upper()
+
         st.session_state['symbol'] = symbol
 
         st.spinner(f"Looking up `{symbol}`...")
 
         if not check_stock_in_list(conn, symbol):
+
+            st.spinner(f"Looking up `{symbol}`... might take a moment...")
 
             st.session_state['retry_count'] += 1
 

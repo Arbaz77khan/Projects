@@ -76,11 +76,11 @@ def data_pipeline(conn, symbol, daily_update_flag = False):
         logging.info("DP: at level 7: train_data")
         multi_model, avg_mse, avg_r2 = train_data(df)
 
-        if daily_update_flag:
-            logging.info("DU: at level 5: upload_model_object_to_drive")
-            model_url = upload_model_object_to_drive(symbol, multi_model)
-        else:
-            model_url = 'PENDING'
+        # if daily_update_flag:
+        #     logging.info("DU: at level 5: upload_model_object_to_drive")
+        #     model_url = upload_model_object_to_drive(symbol, multi_model)
+        # else:
+        model_url = 'PENDING'
 
         logging.info("DP: at level 8: check_stock_in_list")
         if not check_stock_in_list(conn, symbol):
