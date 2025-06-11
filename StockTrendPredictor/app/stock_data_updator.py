@@ -44,7 +44,7 @@ def data_pipeline(conn, symbol, daily_update_flag = False):
 
         if df is None:
             logging.error("Aborting pipeline.")
-            return
+            raise RuntimeError("No data found")
 
         max_table_size = 365
         logging.info("DP: at level 2: create_table_name")
