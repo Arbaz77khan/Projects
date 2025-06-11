@@ -175,9 +175,7 @@ if mode == 0:
                         st.rerun()  
                     elif "No data found" in  error_message:
                         st.error("Have you cross checked if this stock exists🤔")
-                        time.sleep(3)
-                        st.session_state.update({'symbol': '', 'retry_count': -1})
-                        st.rerun()
+                        break
                     else:
                         logging.info(e)
                         st.error("Server down! Please try later!")
