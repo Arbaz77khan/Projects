@@ -174,7 +174,7 @@ if mode == 0:
                         logging.info(f"Waiting {wait_time:.2f} seconds before retrying...")
                         st.rerun()  
                     elif "No data found" in  error_message:
-                        st.error(f"Ah! Seems ticker {symbol} does not exist 🤔 Refresh it and enter exact symbol!")
+                        st.error(f"Oops! The ticker symbol '{symbol}' doesn't seem to exist. Please refresh and enter the exact symbol ")
                         break
                     else:
                         logging.info(e)
