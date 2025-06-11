@@ -178,7 +178,7 @@ if mode == 0:
                         break
                     else:
                         logging.info(e)
-                        st.error("Server down! Please try later!")
+                        st.error("Looks like this stock is playing hide & seek with me—couldn’t find it at the moment. Try again later!")
                         break
         
         inference, trend = fetch_inference_result(conn, symbol)
