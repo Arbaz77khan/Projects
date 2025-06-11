@@ -104,8 +104,11 @@ def data_pipeline(conn, symbol, daily_update_flag = False):
 
     except Exception as e:
         if "429" in str(e) or "Too Many Requests" in str(e):  
-                logging.info(f"Too Many Requests - raising exception to outer block")
-                raise
+            logging.info(f"Too Many Requests - raising exception to outer block")
+            raise
+        elif "No data found" in str(e):  
+            logging.info(f"No data found for entered stock")
+            raise
         logging.error(f"Pipeline error for {symbol}: {str(e)}")
 
 def daily_update(conn):
