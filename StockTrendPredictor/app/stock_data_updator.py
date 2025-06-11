@@ -109,6 +109,8 @@ def data_pipeline(conn, symbol, daily_update_flag = False):
         elif "No data found" in str(e):  
             logging.info(f"No data found for entered stock")
             raise
+        else:
+            raise
         logging.error(f"Pipeline error for {symbol}: {str(e)}")
 
 def daily_update(conn):

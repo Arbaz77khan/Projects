@@ -162,7 +162,7 @@ if mode == 0:
 
     while 0 <= st.session_state['retry_count'] <= MAX_RETRIES:
         if not check_stock_in_list(conn, symbol):
-            with st.spinner(f"Checking the vaults for {symbol}... might take some seconds..."):
+            with st.spinner("Whoa! Fresh stock in the wok! Let’s cook up an analysis... this might take a few seconds..."):
                 try:
                     data_pipeline(conn, symbol)
                 except Exception as e:
@@ -179,7 +179,7 @@ if mode == 0:
                     else:
                         logging.info(e)
                         st.error("Server down! Please try later!")
-                        st.stop()
+                        break
         
         inference, trend = fetch_inference_result(conn, symbol)
         if inference:
