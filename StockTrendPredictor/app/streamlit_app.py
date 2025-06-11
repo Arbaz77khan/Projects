@@ -196,9 +196,10 @@ elif mode == 772001:
     st.markdown("### Daily Update Trigger (Admin Mode)")
     tooManyRequestFlag = False
 
-    while st.session_state['retry_count'] < 0:
+    while st.session_state['retry_count'] < 1:
         with st.spinner("Initiating backend wizardry... might take a moment"):
             try:
+                tooManyRequestFlag = False
                 st.session_state['retry_count'] += 1
                 daily_update(conn)
             except Exception as e:
@@ -208,15 +209,17 @@ elif mode == 772001:
                     wait_time = random.uniform(2, 4)
                     time.sleep(wait_time)
                     logging.info(f"Waiting {wait_time:.2f} seconds before retrying...")
-                    st.rerun()  
+                    # st.rerun()  
+        if not tooManyRequestFlag:
+            break
     else:
         st.error("Daily update failed. Please check log...")
-        st.stop()
 
     if not tooManyRequestFlag: 
         st.success("Stocks updated! We’re fresh as morning chai")
 
     if st.button("Refresh!"):
+        st.session_state['retry_count'] = -1
         st.rerun()
 
 else:

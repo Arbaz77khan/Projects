@@ -121,10 +121,16 @@ def daily_update(conn):
             try:
                 logging.info("DU: at level 3: data_pipeline")
                 data_pipeline(conn, symbol, daily_update_flag)
+                logging.info("Daily update completed — all stocks checked")
             except Exception as e:
+                if "429" in str(e) or "Too Many Requests" in str(e):  
+                    logging.info(f"Too Many Requests - raising exception to outer block")
+                    raise
                 logging.error(f"Error running pipeline for {symbol}: {str(e)}")
-        logging.info("Daily update completed — all stocks checked")
     except Exception as e:
+        if "429" in str(e) or "Too Many Requests" in str(e):  
+            logging.info(f"Too Many Requests - raising exception to outer block")
+            raise
         logging.error(f"Daily update error: {str(e)}")
 
 
