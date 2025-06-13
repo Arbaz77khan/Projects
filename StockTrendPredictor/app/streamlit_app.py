@@ -107,11 +107,11 @@ def streamlit_inference(symbol, inference, trend):
         """
 
     # Trend-based recommendations
-    if trend == 'BUY':
+    if trend == 'BUY' and percentage_change > 0:
         analysis_message += f"""
         ✅ **Recommendation:** BUY now, as the trend suggests an upward movement.
         """
-    elif trend == 'SELL':
+    elif trend == 'SELL' and percentage_change < 0:
         analysis_message += f"""
         🔴 **Recommendation:** SELL now, as prices may decline further.
         """

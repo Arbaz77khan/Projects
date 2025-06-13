@@ -44,12 +44,22 @@ def download_model(conn, symbol):
 
 # generate trend
 def generate_trend_action(predicted_prices, current_close, threshold=0.02):
-    avg_predicted = np.mean(predicted_prices)
-    change = (avg_predicted - current_close) / current_close
+    x = np.arange(len(predicted_prices))  # Days [0, 1, 2, ..., 6]
+    y = np.array(predicted_prices)  # Predicted prices
 
-    if change > threshold:
+    x_mean = np.mean(x)
+    y_mean = np.mean(y)
+
+    numerator = np.sum((x - x_mean) * (y - y_mean))
+    denominator = np.sum((x - x_mean) ** 2)
+
+    slope = numerator / denominator
+
+    change = (predicted_prices[-1] - current_close) / current_close
+
+    if slope > 0 and change > threshold:
         return "BUY"
-    elif change < -threshold:
+    elif slope < 0 and change < -threshold:
         return "SELL"
     else:
         return "HOLD"
