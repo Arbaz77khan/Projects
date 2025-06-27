@@ -10,20 +10,43 @@ from nltk.stem import WordNetLemmatizer
 nltk.download('stopwords')
 nltk.download('wordnet')
 
+stop_words = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
+
 def load_dataset(path='spam.csv'):
     df = pd.read_csv(path, encoding='latin-1')
-    # df = df[['v1', 'v2']].rename(columns={'v1': 'label', 'v2': 'message'})
     return df
 
 def clean_text(text):
+
     text = text.lower()
+
+    # Remove URLs
+    text = re.sub(r"http\S+|www\S+|https\S+", '', text)
+
+    # Remove mentions, hashtags
+    text = re.sub(r'@\w+|#\w+', '', text)
+
+    # Remove emojis and non-ASCII
+    text = re.sub(r'[^\x00-\x7F]+', '', text)
+
+    # Remove digits
     text = re.sub(r'\d+', '', text)
+
+    # Remove punctuation
     text = text.translate(str.maketrans('', '', string.punctuation))
+
+    # Tokenize and remove stopwords
     tokens = text.split()
-    tokens = [word for word in tokens if word not in stopwords.words('english')]
-    lemmatizer = WordNetLemmatizer()
-    tokens = [lemmatizer.lemmatize(word) for word in tokens]
-    return ' '.join(tokens)
+    tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words]
+
+    # Rejoin
+    cleaned = ' '.join(tokens)
+
+    # Remove extra spaces
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+    return cleaned
 
 def prepare_data(path='spam.csv'):
     df = load_dataset(path)

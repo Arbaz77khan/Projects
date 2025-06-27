@@ -2,6 +2,7 @@
 
 import pickle
 import pandas as pd
+from data_processor import clean_text
 
 def Load_model(path='SMSClassifier/sms_classifier.pkl'):
     with open(path, 'rb') as f:
@@ -11,7 +12,8 @@ def Load_model(path='SMSClassifier/sms_classifier.pkl'):
 def predict_sms(messages, model=None):
     if model is None:
         model = Load_model()
-    
+
+    messages = clean_text(messages)
     if isinstance(messages, str):
         messages = [messages]
     
