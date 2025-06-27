@@ -10,3 +10,4 @@ python-dotenv
 gdown
 pydrive2
 requests
+nltk
