@@ -3,7 +3,7 @@
 import pickle
 import pandas as pd
 
-def Load_model(path='sms_classifier.pkl'):
+def Load_model(path='SMSClassifier/sms_classifier.pkl'):
     with open(path, 'rb') as f:
         model = pickle.load(f)
     return model
