@@ -10,7 +10,7 @@ from src.data_prep import feature_engineer
 def load_pipeline():
     root = Path(__file__).resolve().parents[1]
     model_path = root / "models" / "logistic_model.joblib"
-    return joblib.load(path)
+    return joblib.load(model_path)
 
 # predict 
 def predict_proba(input_data, pipeline):
