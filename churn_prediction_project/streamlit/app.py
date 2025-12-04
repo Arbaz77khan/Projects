@@ -3,6 +3,9 @@ import streamlit as st
 import sys
 import os
 
+print("scikit-learn version:", sklearn.__version__)
+
+
 # Add project root to PYTHONPATH
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT_DIR)
