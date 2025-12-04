@@ -18,7 +18,7 @@ from sklearn.metrics import classification_report, roc_auc_score
 import sys
 import os
 
-print("scikit-learn version:", sklearn.__version__)
+st.title("scikit-learn version:", sklearn.__version__)
 
 
 # Add project root to PYTHONPATH
