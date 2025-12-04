@@ -11,7 +11,6 @@ from sklearn.pipeline import Pipeline
 
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.linear_model import LogisticRegression
-from xgboost import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.metrics import classification_report, roc_auc_score
