@@ -6,6 +6,19 @@ import numpy as np
 
 # model_path = 'D:/Master_Folder/Data Science Course/Projects/churn_prediction_project/models/logistic_model.joblib'
 
+# --- sklearn compatibility shim for older pickled models ---
+try:
+    from sklearn.compose import _column_transformer
+
+    if not hasattr(_column_transformer, "_RemainderColsList"):
+        class _RemainderColsList(list):
+            pass
+
+        _column_transformer._RemainderColsList = _RemainderColsList
+except Exception:
+    pass
+# --- end shim ---
+
 # load model
 def load_pipeline():
     root = Path(__file__).resolve().parents[1]
