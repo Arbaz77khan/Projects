@@ -3,7 +3,6 @@ import joblib
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from src.data_prep import feature_engineer
 
 # model_path = 'D:/Master_Folder/Data Science Course/Projects/churn_prediction_project/models/logistic_model.joblib'
 
@@ -12,6 +11,20 @@ def load_pipeline():
     root = Path(__file__).resolve().parents[1]
     model_path = root / "models" / "logistic_model.joblib"
     return joblib.load(model_path)
+
+def feature_engineer(df):
+    df = df.drop(columns=['customerID'])
+    df['is_monthly_contract'] = (df['Contract'] == 'Month-to-month').astype(int)
+
+    df['services_count'] = (
+        (df['OnlineSecurity'] == 'Yes').astype(int) +
+        (df['DeviceProtection'] == 'Yes').astype(int) +
+        (df['TechSupport'] == 'Yes').astype(int)
+    )
+
+    df['recent_drop'] = (df['tenure'] <=3).astype(int)
+
+    return df
 
 # predict 
 def predict_proba(input_data, pipeline):
