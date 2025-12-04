@@ -4,10 +4,12 @@ import pandas as pd
 import numpy as np
 from src.data_prep import feature_engineer
 
-model_path = 'D:/Master_Folder/Data Science Course/Projects/churn_prediction_project/models/logistic_model.joblib'
+# model_path = 'D:/Master_Folder/Data Science Course/Projects/churn_prediction_project/models/logistic_model.joblib'
 
 # load model
-def load_pipeline(path=model_path):
+def load_pipeline():
+    root = Path(__file__).resolve().parents[1]
+    model_path = root / "models" / "logistic_model.joblib"
     return joblib.load(path)
 
 # predict 
