@@ -5,6 +5,7 @@ import numpy as np
 from pathlib import Path
 
 import joblib
+import sklearn
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.pipeline import Pipeline
